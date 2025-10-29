@@ -1,63 +1,3 @@
-<?php
-/***********************
- * orders.php — صفحة تتبع الطلبات:
- * - GET: تعرض طلبات المستخدم المسجل
- ***********************/
-
-// إعدادات قاعدة البيانات
-$DB_HOST = "localhost";
-$DB_USER = "root";
-$DB_PASS = "";
-$DB_NAME = "product_database";
-
-// دالة عرض الطلبات للمستخدم
-function display_orders($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME) {
-  session_start();
-  $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
-
-  if ($user_id === null) {
-    http_response_code(400);
-    echo json_encode(["error" => "User not logged in"]);
-    exit;
-  }
-
-  // الاتصال بقاعدة البيانات
-  $conn = @new mysqli($GLOBALS['DB_HOST'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASS'], $GLOBALS['DB_NAME']);
-  if ($conn->connect_error) {
-    http_response_code(500);
-    echo json_encode(["error" => "Database connection failed"]);
-    exit;
-  }
-  $conn->set_charset("utf8mb4");
-
-  // جلب الطلبات الخاصة بالمستخدم
-  $sql = "SELECT * FROM cart_items WHERE user_id = ?";
-  $stmt = $conn->prepare($sql);
-  if (!$stmt) {
-    http_response_code(500);
-    echo json_encode(["error" => "Prepare failed", "details" => $conn->error]);
-    exit;
-  }
-
-  $stmt->bind_param("i", $user_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  
-  $orders = [];
-  while ($row = $result->fetch_assoc()) {
-    $orders[] = $row;
-  }
-
-  $stmt->close();
-  $conn->close();
-
-  return $orders;
-}
-
-// عرض الصفحة
-$orders = display_orders($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
-?>
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -101,31 +41,27 @@ $orders = display_orders($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
   <div class="orders-container">
     <h4 class="mb-4"><i class="fa-solid fa-bag-shopping me-2"></i> طلباتك</h4>
 
-    <?php if (count($orders) > 0): ?>
-      <div id="orderList">
-        <?php foreach ($orders as $order): ?>
-          <div class="order-item">
-            <img src="images/placeholder.jpg" alt="<?= $order['name'] ?>">
-            <div class="info">
-              <h5 class="mb-1"><?= $order['name'] ?></h5>
-              <div class="small text-muted">
-                <div>السعر: <?= $order['price'] ?> ر.س</div>
-                <div>الاسم: <?= $order['full_name'] ?></div>
-                <div>البريد: <?= $order['email'] ?></div>
-                <div>الجوال: <?= $order['phone'] ?></div>
-                <div>تاريخ الحدث: <?= $order['event_date'] ?></div>
-                <div>ملاحظات: <?= $order['notes'] ?></div>
-              </div>
-            </div>
-            <div class="price"><?= $order['price'] ?> ر.س</div>
+    <div id="orderList">
+      <div class="order-item">
+        <img src="images/placeholder.jpg" alt="اسم المنتج">
+        <div class="info">
+          <h5 class="mb-1">اسم المنتج</h5>
+          <div class="small text-muted">
+            <div>السعر: 150 ر.س</div>
+            <div>الاسم: علي محمد</div>
+            <div>البريد: ali@example.com</div>
+            <div>الجوال: 0501234567</div>
+            <div>تاريخ الحدث: 2025-11-01</div>
+            <div>ملاحظات: لا توجد ملاحظات</div>
           </div>
-        <?php endforeach; ?>
+        </div>
+        <div class="price">150 ر.س</div>
       </div>
-    <?php else: ?>
-      <div class="text-center text-muted mt-4">
-        🛒 لا توجد طلبات حالياً.
-      </div>
-    <?php endif; ?>
+    </div>
+
+    <div class="text-center text-muted mt-4">
+      🛒 لا توجد طلبات حالياً.
+    </div>
   </div>
 
   <footer>
