@@ -14,17 +14,9 @@ Purpose: Allows users to add selected services to their shopping cart.
 
 Content: Lists the selected services with details such as price and customization options.
 
-Interaction: Managed using JavaScript, enabling users to modify their selections or add more services to the cart.
+Interaction: Managed using JavaScript, enabling users to modify their selections or add more services to the cart
 
-3. Profile Page (profile.html):
-
-Purpose: Displays and allows users to edit their personal information.
-
-Content: Users can enter or update personal details such as name, email, and phone number.
-
-Design and Interaction: Designed using CSS and interactive features implemented with JavaScript for dynamic user interaction and data updates.
-
-4. Booking Page (Enter Booking Details):
+3. Booking Page (Enter Booking Details):
 
 Purpose: Requests the user to input booking details, such as the preferred date and time.
 
@@ -32,7 +24,7 @@ Content: Includes fields to enter booking information (name, email, phone number
 
 Interaction: Managed through JavaScript to validate entered data and provide confirmation.
 
-5. Booking Confirmation and Payment Page:
+4. Booking Confirmation and Payment Page:
 
 Purpose: Allows the user to confirm booking details and proceed with online payment.
 
@@ -43,6 +35,10 @@ Interaction: Handled by JavaScript, enabling payment processing and redirecting 
 Technologies Used in Designing the Interfaces:
 
 HTML: Used to structure the site and provide basic content.
+
+
+"Explore creative event solutions with C.O.N.D – Your go-to platform for exceptional event planning."
+https://doh1423.github.io/C.ON.D/
 
 CSS: Responsible for styling the overall design, ensuring the site is responsive on various devices (phones, tablets, computers).
 
