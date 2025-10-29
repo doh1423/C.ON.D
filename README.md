@@ -36,12 +36,11 @@ Technologies Used in Designing the Interfaces:
 
 HTML: Used to structure the site and provide basic content.
 
-
-"Explore creative event solutions with C.O.N.D – Your go-to platform for exceptional event planning."
-https://doh1423.github.io/C.ON.D/
-
 CSS: Responsible for styling the overall design, ensuring the site is responsive on various devices (phones, tablets, computers).
 
 JavaScript: Adds interactivity, such as handling cart operations and updating user input dynamically.
 
 The goal of these interfaces is to provide a flexible and easy-to-navigate user experience while ensuring smooth booking and event organization with a professional touch.
+
+"Explore creative event solutions with C.O.N.D – Your go-to platform for exceptional event planning."
+https://doh1423.github.io/C.ON.D/
