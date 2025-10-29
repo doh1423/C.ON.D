@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>سلة الحجز | C.ON.D</title>
+
+  <!-- Bootstrap + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <style>
+    body {
+      font-family: "Tajawal", Arial, sans-serif;
+      background: #f7f7f7;
+      padding-top: 90px;
+      padding-bottom: 110px;
+    }
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #222;
+      color: #fff;
+      z-index: 999;
+      box-shadow: 0 3px 10px rgba(0,0,0,.3);
+    }
+    header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 0;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .cart-container {
+      max-width: 960px;
+      margin: auto;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      padding: 25px;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+    }
+    .cart-item img {
+      width: 80px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .cart-item .info {
+      flex: 1;
+      margin-inline: 8px;
+    }
+    .cart-item .info h5 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+    }
+    .cart-item .info .small > div { line-height: 1.5; }
+    .price {
+      min-width: 120px;
+      text-align: center;
+      font-weight: 700;
+    }
+    .checkout-btn {
+      background: #750303;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-weight: bold;
+    }
+    footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #222;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+    /* بطاقات المقترحات */
+    .upsell-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border: 1px solid #eaeaea;
+      border-radius: 12px;
+      width: 300px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    }
+    .upsell-card img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .btn-plus {
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔝 الهيدر -->
+  <header>
+    <div class="container">
+      <a href="index.html">C.ON.D</a>
+      <a href="cart.html" class="position-relative">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="cart-count" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display:none">0</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- 🛍 محتوى السلة -->
+  <div class="cart-container">
+    <!-- 🔹 مقترحات تسويقية (+) -->
+    <div id="upsell" class="mb-4" style="display:none;">
+      <h5 class="mb-3">قد يعجبك أيضًا</h5>
+      <div class="d-flex flex-wrap gap-3">
+        <!-- يتم ملؤه عبر JS -->
+      </div>
+    </div>
+
+    <h4 class="mb-4"><i class="fa-solid fa-bag-shopping me-2"></i> سلة الحجز</h4>
+    <div id="cartList"></div>
+
+    <div id="cartSummary" class="d-flex justify-content-between align-items-center mt-4" style="display:none;">
+      <h5 class="mb-0">الإجمالي الكلي: <span id="cartTotal">0 ر.س</span></h5>
+      <button id="checkoutBtn" class="checkout-btn">إتمام الحجز</button>
+    </div>
+
+    <div id="emptyCart" class="text-center text-muted mt-4" style="display:none;">
+      🛒 السلة فارغة حاليًا
+    </div>
+  </div>
+
+  <footer>
+    © 2025 C.ON.D | جميع الحقوق محفوظة
+  </footer>
+
+  <!-- Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- 🧠 سكربت إدارة السلة -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const STORAGE_KEY = 'cond_cart';
+    const cartList = document.getElementById('cartList');
+    const cartSummary = document.getElementById('cartSummary');
+    const emptyCart = document.getElementById('emptyCart');
+    const cartTotal = document.getElementById('cartTotal');
+    const cartCount = document.getElementById('cart-count');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    const upsellWrap = document.querySelector('#upsell');
+    const upsellContainer = upsellWrap?.querySelector('.d-flex');
+
+    const getCart = () => {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    };
+    const setCart = (items) => localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+
+    // تنسيق السعر
+    const fmt = (n, label) => {
+      if (label) return label; // "حسب الاتفاق" للخدمات
+      if (n === null || n === undefined || isNaN(Number(n))) return '—';
+      return (Number(n) || 0).toFixed(2) + ' ر.س';
+    };
+
+    // تحديث شارة العربة في الهيدر
+    function updateBadge(items) {
+      const count = items.length;
+      cartCount.textContent = count;
+      cartCount.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+
+    // 🔹 عناصر المقترحات (٣ منتجات)
+    const suggestedItems = [
+      { id: 'add1', name: 'مسكات عروس', price: 180, thumb: 'images/wrd.png', type: 'addon' },
+      { id: 'add2', name: 'كورنر استقبال وعطورات', price: 250, thumb: 'images/cornr.png', type: 'addon' },
+      { id: 'add3', name: 'تصوير لحظي (زفات)', price: 350, thumb: 'images/ph.png', type: 'addon' },
+    ];
+
+    function renderUpsell() {
+      if (!upsellWrap || !upsellContainer) return;
+      upsellContainer.innerHTML = '';
+      suggestedItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'upsell-card';
+        card.innerHTML = `
+          <img src="${item.thumb}" alt="${item.name}">
+          <div class="me-auto">
+            <div class="fw-bold" style="font-size:.95rem">${item.name}</div>
+            <small class="text-muted">${fmt(item.price)}</small>
+          </div>
+          <button class="btn btn-sm btn-outline-primary btn-plus" data-add="${item.id}" title="أضف للعربة">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        `;
+        card.querySelector('[data-add]').onclick = () => {
+          const cart = getCart();
+          cart.push({
+            name: item.name,
+            price: item.price,
+            priceLabel: null,
+            thumb: item.thumb,
+            fullName: null, email: null, phone: null, eventDate: null, notes: null,
+            type: item.type
+          });
+          setCart(cart);
+          render();
+        };
+        upsellContainer.appendChild(card);
+      });
+    }
+
+    function render() {
+      const cart = getCart();
+      cartList.innerHTML = '';
+
+      if (cart.length === 0) {
+        emptyCart.style.display = 'block';
+        cartSummary.style.display = 'none';
+        if (upsellWrap) upsellWrap.style.display = 'none';
+        updateBadge(cart);
+        return;
+      }
+
+      emptyCart.style.display = 'none';
+      cartSummary.style.display = 'flex';
+      if (upsellWrap) upsellWrap.style.display = 'block';
+
+      let total = 0;
+      let hasPriced = false;
+
+      cart.forEach((item, index) => {
+        const numeric = Number(item.price);
+        const line = isNaN(numeric) ? null : numeric;
+        if (line !== null) { total += line; hasPriced = true; }
+
+        const row = document.createElement('div');
+        row.className = 'cart-item';
+        row.innerHTML = `
+          <img src="${item.thumb || 'images/placeholder.jpg'}" alt="${item.name}">
+          <div class="info">
+            <h5 class="mb-1">${item.name}</h5>
+            ${item.type === 'service' ? `
+              <div class="small text-muted">
+                <div>السعر: <span class="badge bg-secondary">${item.priceLabel || '—'}</span></div>
+                <div>الاسم: ${item.fullName || '—'}</div>
+                <div>البريد: ${item.email || '—'}</div>
+                <div>الجوال: ${item.phone || '—'}</div>
+                <div>تاريخ الحدث: ${item.eventDate || '—'}</div>
+                <div>ملاحظات: ${item.notes || '—'}</div>
+              </div>
+            ` : `
+              <div class="small text-muted">السعر: ${fmt(item.price)}</div>
+            `}
+          </div>
+          <div class="price">${fmt(line, item.priceLabel)}</div>
+          <button class="btn btn-link text-danger p-0" data-act="del" title="حذف">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        `;
+
+        row.querySelector('[data-act="del"]').onclick = () => {
+          const c = getCart();
+          c.splice(index, 1);
+          setCart(c);
+          render();
+        };
+
+        cartList.appendChild(row);
+      });
+
+      cartTotal.textContent = hasPriced ? fmt(total) : 'سيتم تحديد السعر';
+      updateBadge(cart);
+      renderUpsell();
+    }
+
+    checkoutBtn.onclick = () => {
+      alert('✨ تم إرسال الحجز بنجاح! سنتواصل معك قريبًا لتأكيد السعر والتفاصيل.');
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+    };
+
+    // أول تحميل
+    render();
+  });
+  </script>
+</body>
+</html>

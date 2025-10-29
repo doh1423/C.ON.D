@@ -1,0 +1,16 @@
+body{
+background-color: rgb(20, 70, 53);
+ display: flex;
+    flex-direction: column; /* لجعل الهيدر والكاردين في عمود */
+    align-items: center;
+}
+
+.card5 {
+    background-color: antiquewhite; 
+    padding: 10px;
+    margin: 15px;
+    text-align: center;
+    border-radius: 20px;
+    justify-content: center; 
+    margin-top: 20px;
+}
